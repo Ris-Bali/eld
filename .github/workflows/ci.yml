@@ -34,6 +34,12 @@ jobs:
         path: pr-${{ env.PR_NUMBER }}/llvm-project/llvm/tools/eld
         fetch-depth: 0
 
+    - name: Fetch base branch from upstream
+      working-directory: pr-${{ env.PR_NUMBER }}/llvm-project/llvm/tools/eld
+      run: |
+        git remote add upstream https://github.com/qualcomm/eld.git || true
+        git fetch upstream ${{ github.event.pull_request.base.ref }}
+
     - name: Check for non-doc changes
       id: file-check
       working-directory: pr-${{ env.PR_NUMBER }}/llvm-project/llvm/tools/eld
