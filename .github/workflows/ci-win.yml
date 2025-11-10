@@ -1,10 +1,7 @@
 name: Windows Nightly
 
 on:
-  # pull_request: {} # Uncomment only to test this WF file update.
-  schedule:
-    # 9:00 PM Central
-    - cron: '0 2 * * *'
+  pull_request: {}
   workflow_dispatch: {}
 
 jobs:
@@ -14,7 +11,7 @@ jobs:
       contents: read
     env:
       BASE_BRANCH_NAME: ${{ github.event_name == 'pull_request' && github.base_ref || github.ref_name }}
-      
+
     steps:
       - name: Map Git usr/bin to a space-free drive and prepend to PATH
         shell: pwsh
