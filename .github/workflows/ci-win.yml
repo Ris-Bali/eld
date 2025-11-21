@@ -1,10 +1,7 @@
 name: Windows Nightly
 
 on:
-  # pull_request: {} # Uncomment only to test this WF file update.
-  schedule:
-    # 9:00 PM Central
-    - cron: '0 2 * * *'
+  pull_request: {}
   workflow_dispatch: {}
 
 jobs:
