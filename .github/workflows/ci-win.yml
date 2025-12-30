@@ -1,11 +1,12 @@
 name: Windows Nightly
 
 on:
-  # pull_request: {} # Uncomment only to test this WF file update.
-  schedule:
-    # 9:00 PM Central
-    - cron: '0 2 * * *'
-  workflow_dispatch: {}
+  pull_request:
+    types:
+      - opened        # When PR is created
+      - synchronize   # When commits are pushed to the PR
+      - reopened      # When PR is reopened
+  workflow_dispatch: {} # Optional manual trigger
 
 jobs:
   build-windows:
@@ -27,18 +28,17 @@ jobs:
         with:
           repository: llvm/llvm-project
           ref: ${{ env.BASE_BRANCH_NAME }}
-          path: nightly/llvm-project
+          path: llvm-project
 
       - name: Checkout ELD main branch
         uses: actions/checkout@v4
         with:
           repository: ${{ github.repository }}
           ref: ${{ env.BASE_BRANCH_NAME }}
-          path: nightly/llvm-project/llvm/tools/eld
+          path: llvm-project/llvm/tools/eld
           fetch-depth: 0
 
-      - name: Configure CMake
-        working-directory: nightly
+      - name: Run CMake
         shell: bash
         run: |
           mkdir -p obj
@@ -49,23 +49,27 @@ jobs:
             -DLLVM_ENABLE_ASSERTIONS=ON \
             -DLLVM_TARGETS_TO_BUILD="ARM;AArch64;RISCV;Hexagon;X86" \
             -DELD_TARGETS_TO_BUILD="ARM;AArch64;RISCV;Hexagon;x86_64" \
+            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install-nightly-toolchain \
             ../llvm-project/llvm
 
-      - name: Build
-        working-directory: nightly/obj
+      - name: Build and install toolchain
+        working-directory: obj
         shell: bash
-        run: cmake --build . --config Release
+        run: cmake --build . --config Release --target install
 
       - name: Install PyYAML
         shell: bash
         run: python -m pip install pyyaml
 
       - name: Run tests
-        working-directory: nightly/obj
+        working-directory: obj
         shell: bash
         run: cmake --build . --config Release --target check-eld
 
       - name: Clean up
         if: always()
         shell: bash
-        run: rm -rf nightly
+        run: |
+          rm -rf llvm-project
+          rm -rf obj
+          rm -rf install-nightly-toolchain
