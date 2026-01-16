@@ -2,6 +2,9 @@ name: Windows Nightly
 
 on:
   # pull_request: {} # Uncomment only to test this WF file update.
+  pull_request:
+    branches:
+      - '**'
   schedule:
     # 9:00 PM Central
     - cron: '0 2 * * *'
@@ -29,11 +32,11 @@ jobs:
           ref: ${{ env.BASE_BRANCH_NAME }}
           path: nightly/llvm-project
 
-      - name: Checkout ELD main branch
+      - name: Checkout ELD branch
         uses: actions/checkout@v4
         with:
           repository: ${{ github.repository }}
-          ref: ${{ env.BASE_BRANCH_NAME }}
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || env.BASE_BRANCH_NAME }}
           path: nightly/llvm-project/llvm/tools/eld
           fetch-depth: 0
 
